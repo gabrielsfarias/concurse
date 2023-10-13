@@ -6,7 +6,8 @@
   "main": "src/functions/**/*.js",
   "scripts": {
     "start": "func start",
-    "commit": "cz"
+    "commit": "cz",
+    "format": "npx prettier . --write"
   },
   "dependencies": {
     "@azure/cosmos": "^4.0.0",
