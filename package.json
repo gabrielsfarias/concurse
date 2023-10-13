@@ -9,7 +9,9 @@
     "commit": "cz"
   },
   "dependencies": {
-    "@azure/functions": "^4.0.1"
+    "@azure/cosmos": "^4.0.0",
+    "@azure/functions": "^4.0.1",
+    "crawlee": "^3.5.7"
   },
   "devDependencies": {
     "azure-functions-core-tools": "^4.x",
