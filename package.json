@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "src/functions/**/*.js",
+  "main": "src/functions/*.js",
   "scripts": {
     "start": "func start",
     "commit": "cz",
