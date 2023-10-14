@@ -8,51 +8,117 @@ const { RequestTimeoutError } = require('../errors/requestTimeout.js')
 const { UpsertError } = require('../errors/upsert.js')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
+
 const cosmosClient = new CosmosClient({
-  endpoint: 'https://localhost:8081/',
-  key: 'C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=='
+  endpoint: process.env.CosmosDB_Endpoint,
+  key: process.env.CosmosDB_Key,
+  connectionPolicy: { requestTimeout: 8000 }
 })
 
-const fccCrawler = new CheerioCrawler({
-  async requestHandler({ request, $, enqueueLinks, log }) {
-    const title = $('title').text()
-    log.info(`Title of ${request.loadedUrl} is '${title}'`)
+let database
+let container
+let crawlerFcc
 
-    // Save results to CosmosDB
-    const { database } = await cosmosClient.databases.createIfNotExists({
-      id: 'cosmicworks',
-      throughput: 400
+app.timer('FCC', {
+  runOnStartup: true,
+  schedule: '0 */5 * * * *',
+  handler: async (myTimer, context) => {
+    context.log('Timer function processed request.')
+
+    try {
+      const dbResponse = await cosmosClient.databases.createIfNotExists({
+        id: 'concursos',
+        throughput: 1000
+      })
+      database = dbResponse.database
+      const containerResponse = await database.containers.createIfNotExists({
+        id: 'concursos',
+        partitionKey: { paths: ['/concurso'] },
+        uniqueKeyPolicy: { paths: ['/url'] }
+      })
+      container = containerResponse.container
+    } catch (error) {
+      log.error(error)
+      throw new ConnectionFailedError()
+    }
+
+    const startUrls = [
+      `${BASE_URL.fcc}/concursoOutraSituacao.html`,
+      `${BASE_URL.fcc}/concursoAndamento.html`
+    ]
+
+    const router = createCheerioRouter()
+    router.addDefaultHandler(async ({ enqueueLinks, log, $ }) => {
+      log.info('enqueueing new URLs')
+      await enqueueLinks({
+        globs: [`${BASE_URL.fcc}/concursos/**`],
+        label: organizers.FCC
+      })
     })
 
-    const { container } = await database.containers.createIfNotExists({
-      id: 'products',
-      partitionKey: {
-        paths: ['/id']
+    router.addHandler(organizers.FCC, async ({ request, $, log }) => {
+      const concurso = $('title').text().substring(6)
+      const arquivos = $('.linkArquivo .campoLinkArquivo a[href]')
+        .map((i, el) => {
+          const link = $(el).attr('href')
+          if (link.endsWith('.pdf')) {
+            const urlSemIndexHtml = request.loadedUrl.replace('index.html', '')
+            return { link: urlSemIndexHtml + link }
+          }
+          log.debug(link)
+          return null
+        })
+        .get()
+        .filter((item) => item !== null)
+      log.info(`${concurso}`, { url: request.loadedUrl })
+
+      // Check if an item with the same url already exists
+      const querySpec = {
+        query: 'SELECT * FROM c WHERE c.url = @url',
+        parameters: [
+          {
+            name: '@url',
+            value: request.loadedUrl
+          }
+        ]
+      }
+
+      const { resources: existingItems } = await container.items.query(querySpec).fetchAll()
+
+      if (existingItems.length === 0) {
+        // If no existing item with the same url, upsert the new item
+        try {
+          const item = {
+            banca: organizers.FCC,
+            concurso,
+            url: request.loadedUrl,
+            arquivos
+          }
+          await container.items.upsert(item)
+          log.info(`Upserting item: ${JSON.stringify(item)}`)
+        } catch (error) {
+          if (error.name === 'TimeoutError') {
+            throw new RequestTimeoutError()
+          } else {
+            throw new UpsertError()
+          }
+        }
+      } else {
+        log.info(`Item with url ${request.loadedUrl} already exists, skipping`)
       }
     })
 
-    const item = {
-      id: '68719518371',
-      name: title
-    }
+    crawlerFcc = new CheerioCrawler({
+      requestHandler: router,
+      requestHandlerTimeoutSecs: 1000,
+      retryOnBlocked: true,
+      maxRequestRetries: 5
+    })
 
-    await container.items.upsert(item)
-
-    // Extract links from the current page
-    // and add them to the crawling queue.
-    await enqueueLinks()
-  },
-  maxRequestsPerCrawl: 50
-})
-
-export const timer = app.timer('FCC', {
-  runOnStartup: true,
-  schedule: '0 */2 * * * *',
-  handler: async (myTimer, context) => {
-    await fccCrawler.run(['https://example.com'])
-    context.log('Timer function processed request.')
+    await crawlerFcc.run(startUrls)
   }
 })
+
 exports.getCrawler = async function () {
   return crawlerFcc
 }
