@@ -1,6 +1,11 @@
-import { CosmosClient } from '@azure/cosmos'
-import { app } from '@azure/functions'
-import { CheerioCrawler } from 'crawlee'
+const { CosmosClient } = require('@azure/cosmos')
+const { app } = require('@azure/functions')
+const { CheerioCrawler, createCheerioRouter, log } = require('crawlee')
+const { BASE_URL } = require('../constants/baseUrl.js')
+const { organizers } = require('../constants/organizer.js')
+const { ConnectionFailedError } = require('../errors/connectionFailed.js')
+const { RequestTimeoutError } = require('../errors/requestTimeout.js')
+const { UpsertError } = require('../errors/upsert.js')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
 const cosmosClient = new CosmosClient({
@@ -48,3 +53,6 @@ export const timer = app.timer('FCC', {
     context.log('Timer function processed request.')
   }
 })
+exports.getCrawler = async function () {
+  return crawlerFcc
+}
