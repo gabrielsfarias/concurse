@@ -1,0 +1,12 @@
+{
+  "bindings": [
+    {
+      "name": "FCC",
+      "type": "timerTrigger",
+      "direction": "in"
+    }
+  ],
+  "scriptFile": "src/functions/fcc/fcc-scraper.js",
+  "entryPoint": "main",
+  "language": "node"
+}
