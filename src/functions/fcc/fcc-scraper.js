@@ -1,20 +1,17 @@
 const { app } = require('@azure/functions')
 const { createCheerioRouter, CheerioCrawler, log } = require('crawlee')
-const { organizers } = require('../constants/organizer.js')
-const { ConnectionFailedError } = require('../errors/connectionFailed.js')
-const { BASE_URL } = require('../constants/baseUrl.js')
-const { upsertItem } = require('./upsertItem.js')
-const { initializeDatabase } = require('./setupDatabaseAndContainer.js')
-
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
+const { organizers } = require('../../constants/organizer.js')
+const { ConnectionFailedError } = require('../../errors/connectionFailed.js')
+const { BASE_URL } = require('../../constants/baseUrl.js')
+const { upsertItem } = require('../../shared/upsertItem.js')
+const { initializeDatabase } = require('../../shared/setupDatabaseAndContainer.js')
 
 let scraperFcc
 let scrapedData
 let container
 
 app.timer('FCC', {
-  runOnStartup: true,
-  schedule: '0 11 * * * *',
+  schedule: '0 * * * * *',
   handler: async (myTimer, context) => {
     context.log('Timer function processed request.')
 
