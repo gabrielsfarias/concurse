@@ -2,22 +2,26 @@ const { app } = require('@azure/functions')
 const { createCheerioRouter, CheerioCrawler, log } = require('crawlee')
 const { organizers } = require('../constants/organizer.js')
 const { ConnectionFailedError } = require('../errors/connectionFailed.js')
-const { initializeDatabase } = require('./setupDatabaseAndContainer.js')
-const { upsertItem } = require('./upsertItem.js')
 const { BASE_URL } = require('../constants/baseUrl.js')
+const { upsertItem } = require('./upsertItem.js')
+const { initializeDatabase } = require('./setupDatabaseAndContainer.js')
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
 
 let scraperFcc
+let scrapedData
+let container
 
 app.timer('FCC', {
   runOnStartup: true,
-  schedule: '0 */5 * * * *',
+  schedule: '0 11 * * * *',
   handler: async (myTimer, context) => {
     context.log('Timer function processed request.')
 
     try {
-      const container = await initializeDatabase()
+      if (!container) {
+        container = await initializeDatabase() // Initialize the database if not already done
+      }
 
       const startUrls = [
         `${BASE_URL.fcc}/concursoOutraSituacao.html`,
@@ -51,12 +55,16 @@ app.timer('FCC', {
         log.info(`${concurso}`, { url: request.loadedUrl })
         log.info(`Arquivos: ${JSON.stringify(arquivos)}`)
 
-        await upsertItem(container, request, $)
+        scrapedData = {
+          concurso,
+          arquivos
+        }
+        upsertItem(container, request, $, scrapedData) // Pass the data to upsertItem
       })
 
       scraperFcc = new CheerioCrawler({
         requestHandler: router,
-        requestHandlerTimeoutSecs: 90,
+        requestHandlerTimeoutSecs: 120,
         retryOnBlocked: true,
         maxRequestRetries: 5
       })
@@ -69,6 +77,9 @@ app.timer('FCC', {
   }
 })
 
-exports.getSCraper = function () {
-  return scraperFcc
+module.exports = {
+  scrapedData,
+  getSCraper: function () {
+    return scraperFcc
+  }
 }

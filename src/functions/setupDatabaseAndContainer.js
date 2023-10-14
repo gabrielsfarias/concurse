@@ -4,7 +4,7 @@ const { ConnectionFailedError } = require('../errors/connectionFailed.js')
 const cosmosClient = new CosmosClient({
   endpoint: process.env.CosmosDB_Endpoint,
   key: process.env.CosmosDB_Key,
-  connectionPolicy: { requestTimeout: 30000 }
+  connectionPolicy: { requestTimeout: 90000, retryOptions: { maxRetryAttemptCount: 10 } }
 })
 
 let database
