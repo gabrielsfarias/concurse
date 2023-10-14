@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "type": "commonjs",
-  "main": "src/functions/*.js",
+  "main": "src/functions/fcc-scraper.js",
   "scripts": {
     "start": "func start",
     "commit": "cz",
