@@ -5,6 +5,7 @@ const { ConnectionFailedError } = require('../../errors/connectionFailed.js')
 const { BASE_URL } = require('../../constants/baseUrl.js')
 const { upsertItem } = require('../../shared/upsertItem.js')
 const { initializeDatabase } = require('../../shared/setupDatabaseAndContainer.js')
+const { randomUUID } = require('node:crypto')
 
 let scraperFcc
 let scrapedData
@@ -43,7 +44,8 @@ app.timer('FCC', {
             const link = $(el).attr('href')
             if (link.endsWith('.pdf')) {
               const urlSemIndexHtml = request.loadedUrl.replace('index.html', '')
-              return { link: urlSemIndexHtml + link }
+              const uniqueId = randomUUID()
+              return { link: urlSemIndexHtml + link, publicationText, uniqueId }
             }
             log.debug(link)
             return null
@@ -57,6 +59,7 @@ app.timer('FCC', {
           banca: organizers.FCC,
           concurso,
           arquivos: arquivos.map((arquivo) => ({
+            id: arquivo.uniqueId,
             publicationText: arquivo.publicationText.trim(),
             link: arquivo.link
           }))
