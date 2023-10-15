@@ -39,6 +39,7 @@ app.timer('FCC', {
         const concurso = $('title').text().substring(6)
         const arquivos = $('.linkArquivo .campoLinkArquivo a[href]')
           .map((i, el) => {
+            const publicationText = $(el).text().trim()
             const link = $(el).attr('href')
             if (link.endsWith('.pdf')) {
               const urlSemIndexHtml = request.loadedUrl.replace('index.html', '')
@@ -53,8 +54,12 @@ app.timer('FCC', {
         log.info(`Arquivos: ${JSON.stringify(arquivos)}`)
 
         scrapedData = {
+          banca: organizers.FCC,
           concurso,
-          arquivos
+          arquivos: arquivos.map((arquivo) => ({
+            publicationText: arquivo.publicationText.trim(),
+            link: arquivo.link
+          }))
         }
         upsertItem(container, request, $, scrapedData) // Pass the data to upsertItem
       })
