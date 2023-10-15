@@ -1,0 +1,13 @@
+{
+  "bindings": [
+    {
+      "name": "Cebraspe",
+      "type": "timerTrigger",
+      "direction": "in",
+      "runOnStartup": true
+    }
+  ],
+  "scriptFile": "src/functions/cebraspe-scrapper.js",
+  "entryPoint": "main",
+  "language": "node"
+}

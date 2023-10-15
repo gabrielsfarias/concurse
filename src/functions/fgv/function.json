@@ -1,0 +1,13 @@
+{
+  "bindings": [
+    {
+      "name": "FGV",
+      "type": "timerTrigger",
+      "direction": "in",
+      "runOnStartup": true
+    }
+  ],
+  "scriptFile": "src/functions/fgv-scrapper.js",
+  "entryPoint": "main",
+  "language": "node"
+}
