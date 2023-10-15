@@ -5,7 +5,7 @@
   "type": "commonjs",
   "main": "src/functions/**/*.js",
   "scripts": {
-    "start": "func start",
+    "start": "func start --verbose",
     "commit": "cz",
     "format": "npx prettier . --write"
   },
