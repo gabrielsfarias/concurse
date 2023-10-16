@@ -1,7 +1,7 @@
 class UpsertError extends Error {
-  constructor(error) {
-    super(`Error upserting item to Cosmos DB: ${error}`)
-    this.name = 'FailedRequest'
+  constructor(message) {
+    super(message)
+    this.name = 'UpsertError'
   }
 }
 
