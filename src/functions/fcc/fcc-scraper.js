@@ -4,6 +4,7 @@ const { organizers } = require('../../constants/organizer.js')
 const { ConnectionFailedError } = require('../../errors/connectionFailed.js')
 const { BASE_URL } = require('../../constants/baseUrl.js')
 const { upsertItem } = require('../../shared/upsertItem.js')
+const { validateURL } = require('../../shared/validateURL.js')
 const { initializeDatabase } = require('../../shared/setupDatabaseAndContainer.js')
 const { randomUUID } = require('node:crypto')
 
@@ -42,7 +43,7 @@ app.timer('FCC', {
           .map((i, el) => {
             const publicationText = $(el).text().trim()
             const link = $(el).attr('href')
-            if (link.endsWith('.pdf')) {
+            if (link.endsWith('.pdf') && validateURL(link)) {
               const urlSemIndexHtml = request.loadedUrl.replace('index.html', '')
               const uniqueId = randomUUID()
               return { link: urlSemIndexHtml + link, publicationText, uniqueId }
