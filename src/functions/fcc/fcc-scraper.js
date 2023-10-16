@@ -7,6 +7,7 @@ const { upsertItem } = require('../../shared/upsertItem.js')
 const { validateURL } = require('../../shared/validateURL.js')
 const { initializeDatabase } = require('../../shared/setupDatabaseAndContainer.js')
 const { randomUUID } = require('node:crypto')
+const { SocketHangUpError } = require('../../errors/socketHangup.js')
 
 let scraperFcc
 let scrapedData
@@ -77,8 +78,10 @@ app.timer('FCC', {
 
       await scraperFcc.run(startUrls)
     } catch (error) {
-      log.error(error)
-      throw new ConnectionFailedError()
+      if (error instanceof SocketHangUpError) throw new SocketHangUpError()
+      log.error(`Error in timer function: ${error.message}`)
+
+      throw new ConnectionFailedError(`Error in timer function: ${error.message}`)
     }
   }
 })
