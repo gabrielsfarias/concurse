@@ -1,6 +1,7 @@
 const { app } = require('@azure/functions')
 const { createCheerioRouter, CheerioCrawler, log } = require('crawlee')
 const { organizers } = require('../../constants/organizer.js')
+const { BASE_URL } = require('../../constants/baseUrl.js')
 const { ConnectionFailedError } = require('../../errors/connectionFailed.js')
 const { BASE_URL } = require('../../constants/baseUrl.js')
 const { upsertItem } = require('../../shared/upsertItem.js')
