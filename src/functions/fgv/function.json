@@ -3,8 +3,7 @@
     {
       "name": "FGV",
       "type": "timerTrigger",
-      "direction": "in",
-      "runOnStartup": true
+      "direction": "in"
     }
   ],
   "scriptFile": "src/functions/fgv-scrapper.js",

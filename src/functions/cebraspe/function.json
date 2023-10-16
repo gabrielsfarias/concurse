@@ -3,11 +3,11 @@
     {
       "name": "Cebraspe",
       "type": "timerTrigger",
-      "direction": "in",
-      "runOnStartup": true
+      "direction": "in"
     }
   ],
   "scriptFile": "src/functions/cebraspe-scrapper.js",
   "entryPoint": "main",
-  "language": "node"
+  "language": "node",
+  "disabled": true
 }

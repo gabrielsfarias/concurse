@@ -3,11 +3,11 @@
     {
       "name": "Cesgranrio",
       "type": "timerTrigger",
-      "direction": "in",
-      "runOnStartup": true
+      "direction": "in"
     }
   ],
   "scriptFile": "src/functions/cesgranrio-scrapper.js",
   "entryPoint": "main",
-  "language": "node"
+  "language": "node",
+  "disabled": true
 }

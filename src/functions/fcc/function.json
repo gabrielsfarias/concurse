@@ -8,6 +8,5 @@
   ],
   "scriptFile": "src/functions/fcc/fcc-scraper.js",
   "entryPoint": "main",
-  "language": "node",
-  "disabled": true
+  "language": "node"
 }
