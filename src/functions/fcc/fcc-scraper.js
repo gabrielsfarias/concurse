@@ -7,7 +7,7 @@ const { BASE_URL } = require('../../constants/baseUrl.js')
 const { upsertItem } = require('../../shared/upsertItem.js')
 const { validateURL } = require('../../shared/validateURL.js')
 const { initializeDatabase } = require('../../shared/setupDatabaseAndContainer.js')
-const { randomUUID } = require('node:crypto')
+const { getUniqueLinkId } = require('../../shared/uniqueId.js')
 const { SocketHangUpError } = require('../../errors/socketHangup.js')
 
 let scraperFcc
@@ -47,7 +47,7 @@ app.timer('FCC', {
             const link = $(el).attr('href')
             if (link.endsWith('.pdf') && validateURL(link)) {
               const urlSemIndexHtml = request.loadedUrl.replace('index.html', '')
-              const uniqueId = randomUUID()
+              const uniqueId = getUniqueLinkId(organizers.FCC, concurso, link)
               return { link: urlSemIndexHtml + link, publicationText, uniqueId }
             }
             log.debug(link)
