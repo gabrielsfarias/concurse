@@ -24,7 +24,7 @@ async function upsertItem(container, request, $, scrapedData) {
       const arquivos = scrapedData.arquivos
 
       const item = {
-        id: arquivos[0].id, // Use the unique ID of the first file in the arquivos array
+        id: arquivos.id,
         banca: organizers.FCC,
         concurso,
         url: request.loadedUrl,
@@ -44,23 +44,37 @@ async function upsertItem(container, request, $, scrapedData) {
       }
     }
   } else {
-    // An item with the same URL exists, check if data is different before upserting
+    // An item with the same URL exists, merge the existing arquivos with the new ones
     const existingItem = existingItems[0] // Assuming only one document per URL
 
-    if (JSON.stringify(existingItem.arquivos) !== JSON.stringify(scrapedData.arquivos)) {
-      // Data is different, perform the upsert
+    // Create a map of arquivos by their unique IDs
+    const arquivoMap = new Map(existingItem.arquivos.map((arquivo) => [arquivo.link, arquivo]))
+
+    // Merge the existing arquivos with the new ones
+    for (const arquivo of scrapedData.arquivos) {
+      if (!arquivoMap.has(arquivo.url)) {
+        // Only add the arquivo if it doesn't already exist
+        arquivoMap.set(arquivo.link, arquivo) // This will add a new arquivo
+      }
+    }
+
+    // Convert the map back to an array
+    const mergedArquivos = Array.from(arquivoMap.values())
+
+    if (JSON.stringify(existingItem.arquivos) !== JSON.stringify(mergedArquivos)) {
+      // The arquivos have changed, perform the upsert
       try {
         const item = {
           id: existingItem.id, // Use the existing id
           banca: organizers.FCC,
           concurso: scrapedData.concurso,
           url: request.loadedUrl,
-          arquivos: scrapedData.arquivos
+          arquivos: mergedArquivos
         }
 
         await container.items.upsert(item)
         log.info(`Upserting item: ${JSON.stringify(item)}`)
-        return scrapedData.arquivos // Return the updated data
+        return mergedArquivos // Return the updated data
       } catch (error) {
         if (error.code === 408) {
           // Timeout error
@@ -71,7 +85,7 @@ async function upsertItem(container, request, $, scrapedData) {
         }
       }
     } else {
-      // Data is the same, skip the upsert
+      // The arquivos are the same, skip the upsert
       log.info(`Item with URL ${request.loadedUrl} already exists and data is the same, skipping`)
       return existingItem.arquivos // Return the existing data
     }
