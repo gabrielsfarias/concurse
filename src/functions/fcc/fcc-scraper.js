@@ -29,16 +29,16 @@ app.timer('FCC', {
       ]
 
       const router = createCheerioRouter()
+      const banca = organizers.FCC
 
-      router.addDefaultHandler(async ({ enqueueLinks, log, $ }) => {
+      router.addDefaultHandler(async ({ enqueueLinks, log }) => {
         log.info('enqueueing new URLs')
         await enqueueLinks({
           globs: [`${BASE_URL.fcc}/concursos/**`],
           label: organizers.FCC
         })
       })
-
-      router.addHandler(organizers.FCC, async ({ request, $, log }) => {
+      router.addHandler(banca, async ({ request, $, log }) => {
         const concurso = $('title').text().substring(6)
         const arquivos = $('.linkArquivo .campoLinkArquivo a[href]')
           .map((i, el) => {
@@ -46,7 +46,8 @@ app.timer('FCC', {
             const link = $(el).attr('href')
             if (link.endsWith('.pdf') && validateURL(link)) {
               const urlSemIndexHtml = request.loadedUrl.replace('index.html', '')
-              const uniqueId = getUniqueLinkId(organizers.FCC, concurso, link)
+              log.info(`Banca: ${banca}, Concurso: ${concurso}, Link: ${link}`)
+              const uniqueId = getUniqueLinkId(banca, concurso, link)
               return { link: urlSemIndexHtml + link, publicationText, uniqueId }
             }
             log.debug(link)
@@ -58,7 +59,7 @@ app.timer('FCC', {
         log.info(`Arquivos: ${JSON.stringify(arquivos)}`)
 
         scrapedData = {
-          banca: organizers.FCC,
+          banca,
           concurso,
           arquivos: arquivos.map((arquivo) => ({
             id: arquivo.uniqueId,
@@ -66,7 +67,7 @@ app.timer('FCC', {
             link: arquivo.link
           }))
         }
-        upsertItem(container, request, $, scrapedData) // Pass the data to upsertItem
+        upsertItem(container, request, $, scrapedData, banca) // Pass the data to upsertItem
       })
 
       scraperFcc = new CheerioCrawler({
