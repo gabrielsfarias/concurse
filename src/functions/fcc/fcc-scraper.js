@@ -14,7 +14,7 @@ let scrapedData
 let container
 
 app.timer('FCC', {
-  schedule: '0 12 * * * *',
+  schedule: '0 12 * * *',
   handler: async (myTimer, context) => {
     context.log('Timer function processed request.')
 
