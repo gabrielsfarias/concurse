@@ -1,9 +1,13 @@
 const { log } = require('crawlee')
 const { RequestTimeoutError } = require('../errors/requestTimeout.js')
 const { UpsertError } = require('../errors/upsert.js')
-const { organizers } = require('../constants/organizer.js')
 
-async function upsertItem(container, request, $, scrapedData) {
+async function upsertItem(container, request, $, scrapedData, banca) {
+  log.info(
+    `Container: ${container}, Request: ${request}, $: ${$}, ScrapedData: ${JSON.stringify(
+      scrapedData
+    )}, Banca: ${banca}`
+  )
   // Check if an item with the same URL already exists
   const querySpec = {
     query: 'SELECT * FROM c WHERE c.url = @url',
@@ -25,15 +29,16 @@ async function upsertItem(container, request, $, scrapedData) {
 
       const item = {
         id: arquivos.id,
-        banca: organizers.FCC,
+        banca,
         concurso,
         url: request.loadedUrl,
         arquivos
       }
-
-      await container.items.upsert(item)
-      log.info(`Upserting item: ${JSON.stringify(item)}`)
-      return arquivos
+      try {
+        await container.items.upsert(item)
+        log.info(`Upserting item: ${JSON.stringify(item)}`)
+        return arquivos
+      } catch (error) {}
     } catch (error) {
       if (error.code === 408) {
         // Timeout error
@@ -66,7 +71,7 @@ async function upsertItem(container, request, $, scrapedData) {
       try {
         const item = {
           id: existingItem.id, // Use the existing id
-          banca: organizers.FCC,
+          banca,
           concurso: scrapedData.concurso,
           url: request.loadedUrl,
           arquivos: mergedArquivos
