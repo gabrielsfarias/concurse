@@ -3,11 +3,11 @@ const { RequestTimeoutError } = require('../errors/requestTimeout.js')
 const { UpsertError } = require('../errors/upsert.js')
 
 async function upsertItem(container, request, $, scrapedData, banca) {
-  log.info(
-    `Container: ${container}, Request: ${request}, $: ${$}, ScrapedData: ${JSON.stringify(
-      scrapedData
-    )}, Banca: ${banca}`
-  )
+  // log.info(
+  //   `Container: ${container}, Request: ${request}, $: ${$}, ScrapedData: ${JSON.stringify(
+  //     scrapedData
+  //   )}, Banca: ${banca}`
+  // )
   // Check if an item with the same URL already exists
   const querySpec = {
     query: 'SELECT * FROM c WHERE c.url = @url',
