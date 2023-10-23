@@ -43,14 +43,15 @@ app.timer('FGV', {
         const arquivos = $('.field__item > p a[href], tr td > a')
           .map((i, el) => {
             const publicationText = $(el).text().trim()
-            const link = $(el).attr('href')
-            if ((link.endsWith('.pdf') || link.includes('/concursos/')) && validateURL(link)) {
-              // const urlSemIndexHtml = request.loadedUrl.replace('index.html', '')
+            let link = $(el).attr('href')
+            if (link.startsWith('/')) {
+              link = `${BASE_URL.fgv}${link}`
+            }
+            if ((link.endsWith('.pdf') || link.includes('/sites/')) && validateURL(link)) {
               const uniqueId = getUniqueLinkId(banca, concurso, link)
               log.info(`concurso: ${concurso}publicationText: ${publicationText}`)
               return { link, publicationText, uniqueId }
             }
-            // console.log(concurso)
             return null
           })
           .get()
