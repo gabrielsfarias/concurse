@@ -47,8 +47,8 @@ app.timer('FGV', {
             if (link.startsWith('/')) {
               link = `${BASE_URL.fgv}${link}`
             }
-            if ((link.endsWith('.pdf') || link.includes('/sites/')) && validateURL(link)) {
-              const uniqueId = getUniqueLinkId(banca, concurso, link)
+            const uniqueId = getUniqueLinkId(banca, concurso, link)
+            if ((link.endsWith('.pdf') || link.includes('/concursos/')) && validateURL(link)) {
               log.info(`concurso: ${concurso}publicationText: ${publicationText}`)
               return { link, publicationText, uniqueId }
             }
@@ -56,6 +56,7 @@ app.timer('FGV', {
           })
           .get()
           .filter((item) => item !== null)
+
         log.info(`${concurso}`, { url: request.loadedUrl })
         log.info(`Arquivos: ${JSON.stringify(arquivos)}`)
 
